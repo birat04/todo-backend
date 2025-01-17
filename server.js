@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 
 
-mongoose.connect("mongodb+srv://birat059:Rarjun%40055@cluster44.fdvo7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster44");
+mongoose.connect("mongodb+srv://birat059:Rarjun%40055@cluster44.fdvo7.mongodb.net/todos-backend");
 
 const app = express();
 app.use(express.json());
@@ -15,17 +15,29 @@ app.post("/signup", async function (req, res) {
     const email = req.body.email;
     const password = req.body.password;
     const name = req.body.name;
-    const hashedPassword = await bcrypt.hash(password,10);
-    
 
-    await UserModel.create({
-        email: email,
-        password: hashedPassword,
-        name: name
-    });
-    res.json({
-        message: "You are signed up"
-    });
+    if(typeof email !== "string" || email.length < 10 || !email.includes("@")){
+        res.json({
+            message : "Email incorrect"
+        })
+        return
+    }
+    const existingUser = await UserModel.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already exists" });
+        }
+        const hashedPassword = await bcrypt.hash(password,10);
+        console.log(hashedPassword);
+            await UserModel.create({
+                email: email,
+                password: hashedPassword,
+                name: name
+            });
+    
+    
+        res.json({
+            message: "You are signed up"
+        });
 
 });
 
